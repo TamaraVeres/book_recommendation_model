@@ -5,32 +5,33 @@ from torch.utils.data import DataLoader
 import numpy as np
 
 def main():
-    df_final = load_merge_data(file_path_books="./data/books.csv", file_path_ratings="./data/ratings.csv", file_path_users="./data/users.csv")
+    df_final = load_merge_data(file_path_books="../data/Books.csv", file_path_ratings="../data/Ratings.csv", file_path_users="../data/Users.csv")
     print(df_final.head())
     df_final = rename_columns(df_final)
     df_final = clean_and_filter_data(df_final)
     df_final = feature_engineering(df_final)
-    df_final.to_csv("./data/merged_book_data.csv", index=False)
+    df_final.to_csv("../data/merged_book_data.csv", index=False)
     print(df_final.head())
     df_final = scale_numeric_features(df_final)
     df_final = encode_categorical_features(df_final)
-    df_final.to_csv("./data/encoded_book_data.csv", index=False)
+    df_final.to_csv("../data/encoded_book_data.csv", index=False)
     print(df_final.head())
-    train_df, test_df = split_by_user(df_final)
-    dataset = User_Book_Dataset(train_df)
-    dataloader = DataLoader(dataset, batch_size=128, shuffle=True)
+    train_df, val_df, test_df = split_by_user(df_final)
+    train_dataset = User_Book_Dataset(train_df)
+    train_dataloader = DataLoader(train_dataset, batch_size=128, shuffle=True)
     user_encoder = UserEncoder(n_age_bins=len(df_final["age_category"].unique()), n_countries=len(df_final["country"].unique()))
     book_encoder = BookEncoder(n_authors=len(df_final["book_author"].unique()), n_publishers=len(df_final["publisher"].unique()))
-    train_model(user_encoder, book_encoder, dataloader)
+    train_model(user_encoder, book_encoder, train_dataloader)
+    precision_recall_at_k(user_encoder, book_encoder, val_df)
     precision_recall_at_k(user_encoder, book_encoder, test_df)
     
-    # print top 10 for one user
+    # print top 10 for one user 
     user_encoder.eval()
     book_encoder.eval()
     
     # We ge the user and their rows
-    uid = test_df["user_id"].unique()[0]
-    user_dataframe = test_df[test_df["user_id"] == uid].reset_index(drop=True)
+    uid = np.random.choice(val_df["user_id"].unique())
+    user_dataframe = val_df[val_df["user_id"] == uid].reset_index(drop=True)
     
     def mapping_formula(dot_prod_cross):
         return 1.0 + 9.0 * ((dot_prod_cross + 1.0) / 2.0).clip(0, 1)

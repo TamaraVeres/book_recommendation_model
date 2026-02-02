@@ -29,8 +29,8 @@ def rename_columns(df_final):
 def clean_and_filter_data(df_final, min_user = 50, min_ratings = 10):
     print("================================================")
     print("========= BEFORE FILTERING MISSING VALUES ========")
-    print(df_final.info())
     missing_values = df_final.isnull().sum()
+    print(df_final.info())
     print(missing_values)
     df_final = df_final.dropna()
     print("================================================")
@@ -46,8 +46,11 @@ def clean_and_filter_data(df_final, min_user = 50, min_ratings = 10):
     print("========= FILTERING OUT INVALID YEARS ========")
     df_final["year_of_publication"] = pd.to_numeric(df_final["year_of_publication"], errors="coerce")
     df_final = df_final.dropna(subset=["year_of_publication"])
+    print("================================================")
+    print("========= FILTERING OUT USERS WHO READ LESS THAN 10 BOOKS ========")
+    user_book_count = df_final.groupby("user_id")["book_id"].nunique()  
+    df_final = df_final[df_final["user_id"].isin(user_book_count[user_book_count >= 10].index)]
     return df_final
-  
 
 def feature_engineering(df_final, current_year=2026):
     #normalize the ratings
@@ -85,13 +88,19 @@ def encode_categorical_features(df_final):
   return df_final
 
 
-def split_by_user(df_final, test_size=0.2, random_state=42):
+def split_by_user(df_final, train_size=0.8, val_size=0.1, test_size=0.1, random_state=42):
     users = df_final["user_id"].unique() 
-
-    train_users, test_users = train_test_split(
-        users, test_size=test_size, random_state=random_state
+    # first split
+    temp_size = val_size + test_size
+    train_users, temp_users = train_test_split(
+        users, train_size=train_size, test_size=temp_size, random_state=random_state
+    )
+    # second split
+    test_within_temp = test_size / temp_size
+    val_users, test_users = train_test_split(
+        temp_users, test_size=test_within_temp, random_state=random_state
     )
     train_df = df_final[df_final["user_id"].isin(train_users)]
+    val_df = df_final[df_final["user_id"].isin(val_users)]
     test_df = df_final[df_final["user_id"].isin(test_users)]
-
-    return train_df, test_df
+    return train_df, val_df, test_df
