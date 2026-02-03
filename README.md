@@ -24,8 +24,7 @@ python book_main.py
 
 ```
 book_reccomendation/
-├── book_main.py          
-├── dnn.py                
+├── book_main.py                        
 ├── README.md
 ├── requirements.txt
 └── src/
@@ -89,9 +88,9 @@ This transforms categorical values into numerical representations suitable for e
 
 To prevent information leakage and ensure a fair evaluation, the dataset is split by user, rather than by individual interactions.
 
-- 80% of users are assigned to the training set
-- 10% of users to the validation set
-- 10% of users to the test set
+- 70% of users are assigned to the training set
+- 15% of users to the validation set
+- 15% of users to the test set
 
 This user-level split guarantees that no user appears in more than one subset, allowing the model to be evaluated on completely unseen users during validation and testing.
 
@@ -113,7 +112,7 @@ Each data sample consists of:
   - Book age
 
 - **Target variable:**
-  - Book rating
+  - Normalized rating — the residual after subtracting global mean, user bias, and book bias from the raw book rating.
 
 ### Encoders
 
@@ -131,9 +130,9 @@ Each data sample consists of:
 
 ### Rating Prediction
 
-- User and book embeddings are combined using a dot product, representing their latent compatibility.
-- The resulting score is scaled to the rating range [1, 10] via a linear transformation.
-- The model is trained to minimize Mean Squared Error (MSE) between predicted and true ratings.
+- User and book embeddings are combined via a dot product, giving a compatibility score in a bounded range.
+- This score is passed through a small linear layer that predicts the normalized rating (residual), not the raw 1–10 rating.
+- The full predicted rating is obtained as: baseline + predicted residual, where the baseline is "global_mean + user_bias + book_bias" for each user–book pair. Predictions are clipped to the [1, 10] scale for display or ranking.
 
 ### Training Procedure
 
@@ -148,8 +147,26 @@ Each data sample consists of:
 ### Evaluation Metrics
 
 - The model is assessed using Precision@K and Recall@K with *K* = 10.
-- A book is considered relevant if its rating is greater than or equal to a predefined threshold.
-- For each user, the top-*K* books with the highest predicted scores are selected.
+- A book is considered **relevant** if its **book rating is ≥ 7** (predefined threshold).
+- For each user, the top-*K* books with the highest **full predicted ratings** (baseline + residual) are selected.
 - **Precision@K** — proportion of recommended books that are relevant.
 - **Recall@K** — proportion of relevant books that appear in the top-*K* recommendations.
-- Final metrics are computed by averaging Precision@K and Recall@K across all users in the test set.
+- These metrics are computed on both the **validation** and **test** sets, the final reported values are the averages of Precision@K and Recall@K across all users in each set.
+
+## Results
+
+The model was trained for 50 epochs with Adam (learning rate 0.001, weight decay 0.0001). 
+Summary of performance:
+
+| Set        | Precision@10 | Recall@10 | MSE    | RMSE   |
+|-----------|--------------|-----------|--------|--------|
+| Validation| 0.8715       | 0.5699    | 1.9606 | 1.4002 |
+| Test      | 0.8715       | 0.5635    | 1.8683 | 1.3669 |
+
+**Training:** Final epoch training MSE 0.8584 (RMSE 0.9265).
+
+- **Precision@10** — About 87% of the top-10 recommended books are relevant (rating ≥ 7) on both validation and test.
+- **Recall@10** — About 56–57% of each user’s relevant books appear in the top-10 recommendations.
+- **MSE / RMSE** — Rating prediction error on unseen users: test RMSE ≈ 1.37 on the 1–10 scale.
+
+

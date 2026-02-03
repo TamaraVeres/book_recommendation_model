@@ -26,7 +26,7 @@ def rename_columns(df_final):
     return df_final
 
 
-def clean_and_filter_data(df_final, min_user = 50, min_ratings = 10):
+def clean_and_filter_data(df_final):
     print("================================================")
     print("========= BEFORE FILTERING MISSING VALUES ========")
     missing_values = df_final.isnull().sum()
@@ -88,7 +88,7 @@ def encode_categorical_features(df_final):
   return df_final
 
 
-def split_by_user(df_final, train_size=0.8, val_size=0.1, test_size=0.1, random_state=42):
+def split_by_user(df_final, train_size=0.7, val_size=0.15, test_size=0.15, random_state=42):
     users = df_final["user_id"].unique() 
     # first split
     temp_size = val_size + test_size
