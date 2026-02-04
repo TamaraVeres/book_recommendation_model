@@ -165,8 +165,9 @@ Summary of performance:
 
 **Training:** Final epoch training MSE 0.8857 (RMSE 0.9411).
 
-- **Precision@10** — About 87% of the top-10 recommended books are relevant (rating ≥ 7) on both validation and test.
-- **Recall@10** — About 56–57% of each user’s relevant books appear in the top-10 recommendations.
-- **MSE / RMSE** — Rating prediction error on unseen users: test RMSE ≈ 1.37 on the 1–10 scale.
+- **Precision@20** — About 82% (validation) and 80% (test) of the top-20 recommended books are relevant (rating ≥ 8).
+- **Recall@20** — About 81% (validation) and 81% (test) of each user’s relevant books appear in the top-20 recommendations.
+- **Accuracy** — Binary like/dislike classification over all rated items: ~80% (validation), ~78% (test).
+- **MSE / RMSE** — Rating prediction error on unseen users: test RMSE ≈ 1.40 on the 1–10 scale.
 
 
