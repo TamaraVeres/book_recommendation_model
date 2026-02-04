@@ -146,7 +146,7 @@ Each data sample consists of:
 
 ### Evaluation Metrics
 
-- The model is assessed using Precision@K and Recall@K with *K* = 10.
+- The model is assessed using Precision@K and Recall@K with *K* = 20.
 - A book is considered **relevant** if its **book rating is ≥ 7** (predefined threshold).
 - For each user, the top-*K* books with the highest **full predicted ratings** (baseline + residual) are selected.
 - **Precision@K** — proportion of recommended books that are relevant.
@@ -158,12 +158,12 @@ Each data sample consists of:
 The model was trained for 50 epochs with Adam (learning rate 0.001, weight decay 0.0001). 
 Summary of performance:
 
-| Set        | Precision@10 | Recall@10 | MSE    | RMSE   |
-|-----------|--------------|-----------|--------|--------|
-| Validation| 0.8715       | 0.5699    | 1.9606 | 1.4002 |
-| Test      | 0.8715       | 0.5635    | 1.8683 | 1.3669 |
+| Set        | Precision@20 | Recall@20 | Accuracy | MSE    | RMSE   |
+|------------|---------------|-----------|--------------|--------|--------|
+| Validation | 0.8171        | 0.8078    | 0.7958       | 2.0489 | 1.4314 |
+| Test       | 0.7998        | 0.8091    | 0.7837       | 1.9462 | 1.3951 |
 
-**Training:** Final epoch training MSE 0.8584 (RMSE 0.9265).
+**Training:** Final epoch training MSE 0.8857 (RMSE 0.9411).
 
 - **Precision@10** — About 87% of the top-10 recommended books are relevant (rating ≥ 7) on both validation and test.
 - **Recall@10** — About 56–57% of each user’s relevant books appear in the top-10 recommendations.

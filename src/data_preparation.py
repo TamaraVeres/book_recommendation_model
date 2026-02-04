@@ -50,7 +50,13 @@ def clean_and_filter_data(df_final):
     print("========= FILTERING OUT USERS WHO READ LESS THAN 10 BOOKS ========")
     user_book_count = df_final.groupby("user_id")["book_id"].nunique()  
     df_final = df_final[df_final["user_id"].isin(user_book_count[user_book_count >= 10].index)]
+    print("================================================")
+    print("========= FILTERING OUT USERS WHO READ MORE THAN 200 BOOKS ========")
+    user_book_count = df_final.groupby("user_id")["book_id"].nunique()  
+    df_final = df_final[df_final["user_id"].isin(user_book_count[user_book_count <= 200].index)]
+    print("================================================")
     return df_final
+    
 
 def feature_engineering(df_final, current_year=2026):
     #normalize the ratings

@@ -157,8 +157,10 @@ def precision_recall_at_k(user_encoder, book_encoder, rating_head, df_final, tes
     global_mean = df_final["book_rating"].mean()
     precisions = []
     recalls = []
+    accuracies = []
     total_sq_err = 0.0
     total_n = 0
+  
 
     with torch.no_grad():
         for user_id in test_df["user_id"].unique():
@@ -188,15 +190,21 @@ def precision_recall_at_k(user_encoder, book_encoder, rating_head, df_final, tes
             hits = len(recommended_books & relevant_books)
             precision = hits / top_k
             recall = hits / len(relevant_books)
-
+            y_true_rel = (y_true >= relevance_threshold)
+            y_pred_rel = (scores >= relevance_threshold)
+            accuracy = (y_true_rel == y_pred_rel).mean() 
+            
+            accuracies.append(accuracy)
             precisions.append(precision)
             recalls.append(recall)
+            
 
     mean_precision = np.mean(precisions) if precisions else 0.0
     mean_recall = np.mean(recalls) if recalls else 0.0
-    print(f"Precision@{k}: {mean_precision:.4f} | Recall@{k}: {mean_recall:.4f}")
+    mean_accuracy = np.mean(accuracies) if accuracies else 0.0
+    print(f"Precision@{k}: {mean_precision:.4f} | Recall@{k}: {mean_recall:.4f} | Accuracy: {mean_accuracy:.4f}")
     if total_n > 0:
         mse = total_sq_err / total_n
         rmse = np.sqrt(mse)
         print(f"MSE: {mse:.4f} | RMSE: {rmse:.4f}")
-    return mean_precision, mean_recall
+    return mean_precision, mean_recall, mean_accuracy
