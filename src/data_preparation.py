@@ -85,12 +85,11 @@ def encode_categorical_features(df_final):
   country_encoder = LabelEncoder()
   author_encoder = LabelEncoder()
   publisher_encoder = LabelEncoder()
-  age_category_encoder = LabelEncoder()
-  title_encoder = LabelEncoder()
+  age_encoder = LabelEncoder()
   df_final["country"] = country_encoder.fit_transform(df_final["country"])
   df_final["book_author"] = author_encoder.fit_transform(df_final["book_author"])
   df_final["publisher"] = publisher_encoder.fit_transform(df_final["publisher"])
-  df_final["age_category"] = age_category_encoder.fit_transform(df_final["age_category"])
+  df_final["age_category"] = age_encoder.fit_transform(df_final["age_category"])
   return df_final
 
 

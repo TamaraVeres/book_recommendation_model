@@ -38,15 +38,16 @@ class User_Book_Dataset(Dataset):
         return user_features, book_features, rating
 
 class UserEncoder(nn.Module):
-    def __init__(self, n_age_bins, n_countries, embedding_dim=32, latent_dim=64):
+    def __init__(self, n_age_bins, n_countries, embedding_dim=32, latent_dim=32):
         super().__init__()
         self.age_embedding = nn.Embedding(n_age_bins, embedding_dim)
         self.country_embedding = nn.Embedding(n_countries, embedding_dim)
         
         self.mlp = nn.Sequential(
-            nn.Linear(embedding_dim * 2 + 1, 64),
+            nn.Linear(embedding_dim * 2 + 1, 128),
             nn.ReLU(),
-            nn.Dropout(0.1),
+            nn.Linear(128, 64),
+            nn.ReLU(),
             nn.Linear(64, 32),
             nn.ReLU(),
             nn.Linear(32, latent_dim),
@@ -63,15 +64,16 @@ class UserEncoder(nn.Module):
     
 
 class BookEncoder(nn.Module):
-    def __init__(self, n_authors, n_publishers, embedding_dim=32, latent_dim=64):
+    def __init__(self, n_authors, n_publishers, embedding_dim=32, latent_dim=32):
         super().__init__()
         self.author_embedding = nn.Embedding(n_authors, embedding_dim)
         self.publisher_embedding = nn.Embedding(n_publishers, embedding_dim)
         
         self.mlp = nn.Sequential(
-            nn.Linear(embedding_dim * 2 + 1, 64),
+            nn.Linear(embedding_dim * 2 + 1, 128),
             nn.ReLU(),
-            nn.Dropout(0.1),
+            nn.Linear(128, 64),
+            nn.ReLU(),
             nn.Linear(64, 32),
             nn.ReLU(),
             nn.Linear(32, latent_dim),
@@ -157,7 +159,6 @@ def precision_recall_at_k(user_encoder, book_encoder, rating_head, df_final, tes
     global_mean = df_final["book_rating"].mean()
     precisions = []
     recalls = []
-    accuracies = []
     total_sq_err = 0.0
     total_n = 0
   
@@ -192,9 +193,7 @@ def precision_recall_at_k(user_encoder, book_encoder, rating_head, df_final, tes
             recall = hits / len(relevant_books)
             y_true_rel = (y_true >= relevance_threshold)
             y_pred_rel = (scores >= relevance_threshold)
-            accuracy = (y_true_rel == y_pred_rel).mean() 
-            
-            accuracies.append(accuracy)
+        
             precisions.append(precision)
             recalls.append(recall)
             
